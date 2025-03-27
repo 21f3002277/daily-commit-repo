@@ -1,0 +1,34 @@
+
+name: Daily Automated Commit
+
+on:
+  schedule:
+    - cron: '0 12 * * *'  # Runs at 12:00 UTC every day
+  workflow_dispatch:
+
+jobs:
+  daily-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false  # Use our custom PAT instead
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+      - name: Update log file
+        run: echo "$(date -u) - Automated commit by workflow" >> daily_log.txt
+
+      - name: Commit and Push
+        env:
+          GH_PAT: ${ secrets.GH_PAT }
+        run: |
+          git add daily_log.txt
+          git commit -m "Automated daily commit"
+          git push https://$GH_PAT@github.com/21f3002277/daily-commit-repo main
+    
+  
